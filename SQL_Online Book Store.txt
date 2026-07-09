@@ -1,7 +1,5 @@
 PROJECT IN SQL SERVER MANAGEMENT STUDIO (SSMS)
 
-
-
 create database online_book_store;
 
 use online_book_store;
