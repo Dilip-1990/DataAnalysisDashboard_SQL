@@ -1,4 +1,4 @@
-Online Book Store Database | SQL Server Management Studio (SSMS)
+Online Book Store | SQL Server Management Studio (SSMS)
 
 Description:
 Designed and queried a relational database for an online bookstore using SQL Server. Wrote SQL queries involving joins, aggregate functions, subqueries, and window functions to analyze sales, customers, orders, and inventory data.
