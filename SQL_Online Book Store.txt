@@ -1,0 +1,348 @@
+PROJECT IN SQL SERVER MANAGEMENT STUDIO (SSMS)
+
+
+
+create database online_book_store;
+
+use online_book_store;
+
+--Create Table and Import Data (books)-----1
+drop table if exists books;
+create table books(
+	Book_ID int identity(1,1) primary key,
+	Title varchar (100),
+	Author varchar (50),
+	Genre varchar (50),
+	Published_Year int,
+	Price numeric(10,2),
+	Stock int
+);
+
+select * from books;
+
+BULK INSERT dbo.books
+FROM 'C:\Users\dilip kamble\OneDrive\Desktop\Books.csv'
+WITH (
+    FORMAT = 'CSV',
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0A'
+);
+
+select * from books;
+
+--Create Table and Import Data (customers)-----2
+drop table if exists customers;
+create table customers(
+	Customer_ID int identity(1,1) primary key,
+	Name varchar (50),
+	Email varchar (100),
+	Phone int,
+	City varchar (50),
+	Country varchar (150)
+);
+
+select * from customers;
+
+BULK INSERT dbo.customers
+FROM 'C:\Users\dilip kamble\OneDrive\Desktop\Customers.csv'
+WITH (
+    FORMAT = 'CSV',
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0A'
+);
+
+select * from customers;
+
+--Create Table and Import Data (orders)-----3
+drop table if exists orders;
+create table orders(
+	Order_ID int identity(1,1) primary key,
+	Customer_ID int references customers (Customer_ID),
+	Book_ID int references books (Book_ID),
+	Order_Date date,
+	Quantity int,
+	Total_Amount numeric(10,2)
+);
+
+select * from orders;
+
+BULK INSERT dbo.orders
+FROM 'C:\Users\dilip kamble\OneDrive\Desktop\Orders.csv'
+WITH (
+    FORMAT = 'CSV',
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '0x0A'
+);
+
+select * from orders;
+
+
+--Basic Queries:
+--1) Retrieve all books in the "Fiction" genre
+
+select * from books;
+
+select * from books
+where Genre= 'Fiction';
+
+--2) Find books published after the year 1950
+
+select * from books;
+
+select * from books
+where Published_Year> 1950;
+
+--3) List all customers from the Canada
+
+select * from customers;
+
+select * from customers
+where Country like '%Canada%';
+
+--4) Show orders placed in November 2023
+
+select * from orders;
+
+select * from orders
+where Order_Date between '2023-11-01' and '2023-11-30';
+
+select * from orders
+where Order_Date between '2023-11-01' and '2023-11-30'
+order by Order_Date;
+
+--5) Retrieve the total stock of books available
+
+select * from books;
+
+select sum(Stock) as Total_Stock
+from books;
+
+select Genre, sum(Stock) as Total_Stock
+from books
+group by Genre;
+
+--6) Find the details of the most expensive book
+
+select * from books;
+
+select * from books
+order by Price desc;
+
+select top 1 * from books
+order by Price desc;
+
+--7) Show all customers who ordered more than 1 quantity of a book
+
+select * from orders;
+
+select * from orders
+where Quantity> 1;
+
+select * from orders
+where Quantity> 1;
+
+select * from orders
+where Quantity> 1
+order by Quantity desc;
+
+--8) Retrieve all orders where the total amount exceeds $20
+
+select * from orders;
+
+select * from orders
+where Total_Amount> 20;
+
+select * from orders
+where Total_Amount> 20
+order by Total_Amount desc;
+
+
+--9) List all genres available in the Books table
+
+select * from books;
+
+select Genre
+from books;
+
+select distinct Genre
+from books;
+
+--10) Find the book with the lowest stock
+
+select * from books;
+
+select * from books
+order by Stock asc;
+
+select top 1 * from books
+order by Stock asc;
+
+--11) Calculate the total revenue generated from all orders
+
+select * from orders;
+
+select sum(Total_Amount) as Total_Revenue
+from orders;
+
+select Customer_ID, sum(Total_Amount) as Total_Revenue
+from orders
+group by Customer_ID;
+
+
+--Advance Queries:
+--1) Retrieve the total number of books sold for each genre
+
+select * from orders;
+select * from books;
+
+select b.Genre, o.Quantity
+from orders o
+join books b on o.Book_ID= b.Book_ID;
+
+select b.Genre, sum(o.Quantity) as Total_Books_Sold
+from orders o
+join books b on o.Book_ID= b.Book_ID
+group by Genre;
+
+--2) Find the average price of books in the "Fantasy" genre
+
+select * from books;
+
+select Genre, avg(Price) as Average_Price
+from books
+group by Genre;
+
+select avg(Price) as Fantasy_Average_Price
+from books
+where Genre= 'Fantasy';
+
+--3) List customers who have placed at least 2 orders
+
+select * from orders;
+select * from customers;
+
+select Customer_ID, count(Order_ID) as Order_Count
+from orders
+group by Customer_ID;
+
+select Customer_ID, count(Order_ID) as Order_Count
+from orders
+group by Customer_ID
+having count(Order_ID)>= 2
+order by Order_Count;
+
+select o.Customer_ID, c.Name, count(o.Order_ID) as Order_Count
+from orders o
+join customers c on o.Customer_ID= c.Customer_ID
+group by o.Customer_ID, c.Name
+having count(o.Order_ID)>= 2
+order by Order_Count asc;
+
+
+--4) Find the most frequently ordered book
+
+select * from orders;
+select * from books;
+
+select Book_ID, count(Order_ID) as Order_Count
+from orders
+group by Book_ID
+order by Order_Count desc;
+
+select top 1 Book_ID, count(Order_ID) as Order_Count
+from orders
+group by Book_ID
+order by Order_Count desc;
+
+select top 1 o.Book_ID, b.Title, count(o.Order_ID) as Order_Count
+from orders o
+join books b on o.Book_ID= b.Book_ID
+group by o.Book_ID, b.Title
+order by Order_Count desc;
+
+--5) Show the top 3 most expensive books of 'Fantasy' Genre
+
+select * from books;
+
+select top 3 * from books
+where Genre= 'Fantasy'
+order by Price Desc;
+
+--6) Retrieve the total quantity of books sold by each author
+
+select * from orders;
+select * from books;
+
+select Book_ID, sum(Quantity) as Total_Books_Sold
+from orders
+group by Book_ID;
+
+select o.Book_ID, b.Author, sum(o.Quantity) as Total_Books_Sold
+from orders o
+join books b on o.Book_ID= b.Book_ID
+group by o.Book_ID, b.Author
+order by Total_Books_Sold desc;
+
+--7) List the cities where customers who spent over $30 are located
+
+select * from orders;
+select * from customers;
+
+select Customer_ID, Total_Amount
+from orders;
+
+select o.Customer_ID, c.City, o.Total_Amount
+from orders o
+join customers c on o.Customer_ID= c.Customer_ID
+where o.Total_Amount> 30
+order by o.Total_Amount asc;
+
+--8) Find the customer who spent the most on orders
+
+select * from orders;
+select * from customers;
+
+select Customer_ID, Sum(Total_Amount) as Total_Spent_Amount
+from orders
+group by Customer_ID
+order by Total_Spent_Amount desc;
+
+select o.Customer_ID, c.Name, sum(o.Total_Amount) as Total_Spent_Amount
+from orders o
+join customers c on o.Customer_ID= o.Customer_ID
+group by o.Customer_ID, c.Name
+order by Total_Spent_Amount desc;
+
+select top 1 o.Customer_ID, c.Name, sum(o.Total_Amount) as Total_Spent_Amount
+from orders o
+join customers c on o.Customer_ID= o.Customer_ID
+group by o.Customer_ID, c.Name
+order by Total_Spent_Amount desc;
+
+--9) Calculate the stock remaining after fulfilling all orders
+
+select * from books;
+select * from orders;
+
+select b.Book_ID, 
+	b.Title, 
+	b.Stock,
+	coalesce(sum(o.Quantity),0) as Order_Quantity
+from books b
+left join orders o on b.Book_ID= o.Book_ID
+group by b.Book_ID, b.Title, b.Stock;
+
+
+select b.Book_ID, 
+	b.Title, 
+	b.Stock,
+	coalesce(sum(o.Quantity),0) as Order_Quantity,
+	b.stock- coalesce(sum(o.Quantity),0) as Remaining_Quantity
+from books b
+left join orders o on b.Book_ID= o.Book_ID
+group by b.Book_ID, b.Title, b.Stock;
+
+
